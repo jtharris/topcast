@@ -8,7 +8,6 @@ import (
 // TODO:  It is weird to use an object that manipulates the global ui.Body - rethink this!
 
 type Screen struct {
-	//body      *ui.Grid
 	downloads []*DownloadElement
 }
 
@@ -64,28 +63,4 @@ func newHeader() *ui.Par {
 	p.BorderFg = ui.ColorCyan
 
 	return p
-}
-
-func DrawScreen() {
-	screenWidth := ui.TermWidth()
-
-	p := ui.NewPar(":PRESS q TO QUIT")
-	p.Height = 3
-	p.Width = screenWidth
-	p.TextFgColor = ui.ColorWhite
-	p.BorderLabel = "Text Box"
-	p.BorderFg = ui.ColorCyan
-
-	g := ui.NewGauge()
-	g.Percent = 50
-	g.Width = screenWidth
-	g.Height = 3
-	g.Y = 11
-	g.BorderLabel = "Gauge"
-	g.BarColor = ui.ColorRed
-	g.BorderFg = ui.ColorWhite
-	g.BorderLabelFg = ui.ColorCyan
-
-	ui.Clear()
-	ui.Render(p, g) // feel free to call Render, it's async and non-block
 }
