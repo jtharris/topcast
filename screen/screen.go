@@ -1,6 +1,8 @@
 package screen
 
 import (
+	"fmt"
+
 	ui "github.com/gizak/termui"
 	"github.com/jtharris/topcast/podcasts"
 )
@@ -29,7 +31,7 @@ func (s *Screen) Update() {
 }
 
 func NewScreen() *Screen {
-	headerCol := ui.NewCol(10, 2, newHeader())
+	headerCol := ui.NewCol(8, 2, newHeader())
 	ui.Body.AddRows(ui.NewRow(headerCol))
 
 	return &Screen{}
@@ -43,11 +45,13 @@ type DownloadElement struct {
 
 func (d *DownloadElement) Update() {
 	d.guage.Percent = d.download.PercentComplete()
+	d.guage.Label = fmt.Sprintf("%d%% (%s)", d.download.PercentComplete(), d.download.Rate())
 }
 
 func newDownloadElement(d *podcasts.Download) *DownloadElement {
 	guage := ui.NewGauge()
 	guage.BorderLabel = d.Title()
+	guage.Height = 5
 
 	return &DownloadElement{
 		download: d,

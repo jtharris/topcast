@@ -2,18 +2,20 @@ package podcasts
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/cavaliercoder/grab"
 	humanize "github.com/dustin/go-humanize"
 )
 
 type DownloadManager struct {
-	Destination string
-	client      *grab.Client
+	downloadsDir string
+	client       *grab.Client
 }
 
 func (dm *DownloadManager) StartDownload(episode *Episode) (*Download, error) {
-	req, err := grab.NewRequest(dm.Destination, episode.URL)
+	podcastDir := filepath.Join(dm.downloadsDir, episode.Podcast.Slug) + "/"
+	req, err := grab.NewRequest(podcastDir, episode.URL)
 
 	if err != nil {
 		return nil, err
@@ -27,10 +29,10 @@ func (dm *DownloadManager) StartDownload(episode *Episode) (*Download, error) {
 	return download, err
 }
 
-func NewDownloadManager() *DownloadManager {
+func NewDownloadManager(downloadsDir string) *DownloadManager {
 	return &DownloadManager{
-		Destination: "./downloads/", // Temp!  Get this from config
-		client:      grab.NewClient(),
+		downloadsDir: downloadsDir,
+		client:       grab.NewClient(),
 	}
 }
 
@@ -48,5 +50,9 @@ func (d *Download) PercentComplete() int {
 }
 
 func (d *Download) Rate() string {
-	return fmt.Sprintf("%s / s", humanize.Bytes(uint64(d.response.BytesPerSecond())))
+	return fmt.Sprintf("%s/s", humanize.Bytes(uint64(d.response.BytesPerSecond())))
+}
+
+func (d *Download) IsComplete() bool {
+	return d.response.IsComplete()
 }

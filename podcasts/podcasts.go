@@ -36,6 +36,7 @@ func (p *Podcast) GetLatestEpisodes(max int) []*Episode {
 
 	for i := 0; i < max; i++ {
 		episodes[i] = newEpisodeFromFeedItem(p.feed.Items[i])
+		episodes[i].Podcast = p
 	}
 
 	return episodes
@@ -50,6 +51,7 @@ func NewPodcast(config config.PodcastConfig) *Podcast {
 }
 
 type Episode struct {
+	Podcast     *Podcast
 	Title       string
 	Description string
 	URL         string

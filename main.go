@@ -34,16 +34,16 @@ func readConfig() config.TopCastConfig {
 
 func main() {
 	defer ui.Close()
-	manager := podcasts.NewDownloadManager()
-	screen := setupScreen()
 	config := readConfig()
+	manager := podcasts.NewDownloadManager(config.Settings.DownloadsDir)
+	screen := setupScreen()
 
 	// TODO:  Provide more visibility here?
 	for _, podcastConfig := range config.Podcasts {
 		podcast := podcasts.NewPodcast(podcastConfig)
 		podcast.Update()
 
-		for _, episode := range podcast.GetLatestEpisodes(2) {
+		for _, episode := range podcast.GetLatestEpisodes(config.Settings.MaxEpisodes) {
 			dl, err := manager.StartDownload(episode)
 
 			if err == nil {
@@ -56,7 +56,7 @@ func main() {
 	}
 
 	go func() {
-		for _ = range time.Tick(1 * time.Second) {
+		for _ = range time.Tick(500 * time.Millisecond) {
 			screen.Update()
 		}
 	}()

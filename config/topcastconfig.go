@@ -7,7 +7,13 @@ import (
 )
 
 type TopCastConfig struct {
+	Settings SettingsConfig  `yaml:"settings"`
 	Podcasts []PodcastConfig `yaml:"podcasts"`
+}
+
+type SettingsConfig struct {
+	DownloadsDir string `yaml:"downloads_dir"`
+	MaxEpisodes  int    `yaml:"max_episodes"`
 }
 
 type PodcastConfig struct {
