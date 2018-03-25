@@ -100,7 +100,7 @@ type DownloadElement struct {
 
 func (d *DownloadElement) Update() {
 	d.guage.Percent = d.download.PercentComplete()
-	d.guage.Label = fmt.Sprintf("%d%% (%s)", d.download.PercentComplete(), d.download.Rate())
+	d.guage.Label = fmt.Sprintf("%d%% (%s)  ETA: %s", d.download.PercentComplete(), d.download.Rate(), d.download.TimeLeft())
 }
 
 func newDownloadElement(d *podcasts.Download) *DownloadElement {

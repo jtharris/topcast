@@ -53,6 +53,10 @@ func (d *Download) Rate() string {
 	return fmt.Sprintf("%s/s", humanize.Bytes(uint64(d.response.BytesPerSecond())))
 }
 
+func (d *Download) TimeLeft() string {
+	return humanize.Time(d.response.ETA())
+}
+
 func (d *Download) IsComplete() bool {
 	return d.response.IsComplete()
 }
