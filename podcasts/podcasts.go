@@ -57,10 +57,20 @@ type Episode struct {
 	URL         string
 }
 
+func (e *Episode) IsValid() bool {
+	return len(e.URL) > 3
+}
+
 func newEpisodeFromFeedItem(item *gofeed.Item) *Episode {
+	var episodeURL string
+
+	if len(item.Enclosures) > 0 {
+		episodeURL = item.Enclosures[0].URL
+	}
+
 	return &Episode{
 		Title:       item.Title,
 		Description: item.Description,
-		URL:         item.Enclosures[0].URL, // TODO:  Make this more robust in case of none/multiple!
+		URL:         episodeURL,
 	}
 }

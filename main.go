@@ -47,6 +47,10 @@ func main() {
 			screen.Info.AddInfo("Got episodes for:  " + podcast.Title)
 
 			for _, episode := range podcast.GetLatestEpisodes(config.Settings.MaxEpisodes) {
+				if !episode.IsValid() {
+					screen.Info.AddInfo("Skipping invalid episode:  " + episode.Title)
+					continue
+				}
 				dl, err := manager.StartDownload(episode)
 
 				if err == nil {

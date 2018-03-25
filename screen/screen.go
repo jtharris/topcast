@@ -24,9 +24,6 @@ func (s *Screen) Update() {
 }
 
 func NewScreen() *Screen {
-	headerCol := ui.NewCol(8, 2, newHeader())
-	ui.Body.AddRows(ui.NewRow(headerCol))
-
 	// TODO:  Hard coding!
 	info := NewInfoList(5)
 	ui.Body.AddRows(info.row)
@@ -53,9 +50,10 @@ func NewInfoList(maxItems int) *InfoList {
 	info := ui.NewList()
 	info.Height = 12
 	info.PaddingBottom = 2
-	info.Float = ui.AlignBottom
-	info.BorderLabel = "Events"
+	info.BorderLabel = "Topcast"
 	info.BorderLabelFg = ui.ColorYellow
+	info.ItemFgColor = ui.ColorCyan
+	info.Items = []string{"Welcome to Topcast!  Press 'q' at any time to quit."}
 
 	return &InfoList{
 		maxItems: maxItems,
@@ -79,6 +77,12 @@ func (dl *DownloadsList) AddDownload(download *podcasts.Download) {
 func (dl *DownloadsList) Update() {
 	for _, element := range dl.elements {
 		element.Update()
+
+		if element.download.IsComplete() {
+			// TODO:  Also send a message to the info queue
+			// This will effectively hide the element
+			element.guage.Height = 0
+		}
 	}
 }
 
@@ -102,20 +106,11 @@ func (d *DownloadElement) Update() {
 func newDownloadElement(d *podcasts.Download) *DownloadElement {
 	guage := ui.NewGauge()
 	guage.BorderLabel = d.Title()
-	guage.Height = 5
+	guage.Height = 3
 
 	return &DownloadElement{
 		download: d,
 		row:      ui.NewRow(ui.NewCol(12, 0, guage)),
 		guage:    guage,
 	}
-}
-
-func newHeader() *ui.Par {
-	p := ui.NewPar("PRESS q TO QUIT")
-	p.Height = 3
-	p.BorderLabel = "TopCast"
-	p.BorderFg = ui.ColorCyan
-
-	return p
 }
