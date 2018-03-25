@@ -8,22 +8,15 @@ import (
 )
 
 // TODO:  It is weird to use an object that manipulates the global ui.Body - rethink this!
-
 type Screen struct {
-	downloads []*DownloadElement
-}
+	Header *ui.Par
 
-func (s *Screen) AddDownload(download *podcasts.Download) {
-	elem := newDownloadElement(download)
-	s.downloads = append(s.downloads, elem)
-
-	ui.Body.AddRows(elem.row)
+	Downloads *DownloadsList
+	Info      *InfoList
 }
 
 func (s *Screen) Update() {
-	for _, download := range s.downloads {
-		download.Update()
-	}
+	s.Downloads.Update()
 
 	ui.Clear()
 	ui.Body.Align()
@@ -34,7 +27,65 @@ func NewScreen() *Screen {
 	headerCol := ui.NewCol(8, 2, newHeader())
 	ui.Body.AddRows(ui.NewRow(headerCol))
 
-	return &Screen{}
+	// TODO:  Hard coding!
+	info := NewInfoList(5)
+	ui.Body.AddRows(info.row)
+
+	return &Screen{
+		Downloads: newDownloadsList(ui.Body),
+		Info:      info,
+	}
+}
+
+type InfoList struct {
+	maxItems int
+	row      *ui.Row
+	list     *ui.List
+}
+
+func (il *InfoList) AddInfo(info string) {
+	// TODO:  Cap this at maxItems!
+	il.list.Items = append(il.list.Items, info)
+	ui.Render(il.row)
+}
+
+func NewInfoList(maxItems int) *InfoList {
+	info := ui.NewList()
+	info.Height = 12
+	info.PaddingBottom = 2
+	info.Float = ui.AlignBottom
+	info.BorderLabel = "Events"
+	info.BorderLabelFg = ui.ColorYellow
+
+	return &InfoList{
+		maxItems: maxItems,
+		row:      ui.NewRow(ui.NewCol(12, 0, info)),
+		list:     info,
+	}
+}
+
+type DownloadsList struct {
+	widget   *ui.Grid
+	elements []*DownloadElement
+}
+
+func (dl *DownloadsList) AddDownload(download *podcasts.Download) {
+	elem := newDownloadElement(download)
+	dl.elements = append(dl.elements, elem)
+
+	dl.widget.AddRows(elem.row)
+}
+
+func (dl *DownloadsList) Update() {
+	for _, element := range dl.elements {
+		element.Update()
+	}
+}
+
+func newDownloadsList(parentGrid *ui.Grid) *DownloadsList {
+	return &DownloadsList{
+		widget: parentGrid,
+	}
 }
 
 type DownloadElement struct {
