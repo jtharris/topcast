@@ -25,28 +25,41 @@ func (s *Screen) Update() {
 
 func NewScreen() *Screen {
 	// TODO:  Hard coding!
-	info := NewInfoList(5)
+	infoQueue := make(chan string, 25)
+	info := NewInfoList(infoQueue, 11)
 	ui.Body.AddRows(info.row)
 
 	return &Screen{
-		Downloads: newDownloadsList(ui.Body),
+		Downloads: newDownloadsList(infoQueue, ui.Body),
 		Info:      info,
 	}
 }
 
 type InfoList struct {
-	maxItems int
-	row      *ui.Row
-	list     *ui.List
+	InfoQueue chan string
+	maxItems  int
+	row       *ui.Row
+	list      *ui.List
 }
 
-func (il *InfoList) AddInfo(info string) {
-	// TODO:  Cap this at maxItems!
+func (il *InfoList) Start() {
+	for m := range il.InfoQueue {
+		il.addInfo(m)
+	}
+}
+
+func (il *InfoList) addInfo(info string) {
 	il.list.Items = append(il.list.Items, info)
+
+	itemLength := len(il.list.Items)
+	if itemLength > il.maxItems {
+		il.list.Items = il.list.Items[itemLength-il.maxItems : itemLength]
+	}
+
 	ui.Render(il.row)
 }
 
-func NewInfoList(maxItems int) *InfoList {
+func NewInfoList(infoQueue chan string, maxItems int) *InfoList {
 	info := ui.NewList()
 	info.Height = 12
 	info.PaddingBottom = 2
@@ -56,15 +69,17 @@ func NewInfoList(maxItems int) *InfoList {
 	info.Items = []string{"Welcome to Topcast!  Press 'q' at any time to quit."}
 
 	return &InfoList{
-		maxItems: maxItems,
-		row:      ui.NewRow(ui.NewCol(12, 0, info)),
-		list:     info,
+		InfoQueue: infoQueue,
+		maxItems:  maxItems,
+		row:       ui.NewRow(ui.NewCol(12, 0, info)),
+		list:      info,
 	}
 }
 
 type DownloadsList struct {
-	widget   *ui.Grid
-	elements []*DownloadElement
+	infoQueue chan string
+	widget    *ui.Grid
+	elements  []*DownloadElement
 }
 
 func (dl *DownloadsList) AddDownload(download *podcasts.Download) {
@@ -76,19 +91,23 @@ func (dl *DownloadsList) AddDownload(download *podcasts.Download) {
 
 func (dl *DownloadsList) Update() {
 	for _, element := range dl.elements {
-		element.Update()
+		if element.download != nil {
+			element.Update()
 
-		if element.download.IsComplete() {
-			// TODO:  Also send a message to the info queue
-			// This will effectively hide the element
-			element.guage.Height = 0
+			if element.download.IsComplete() {
+				// This will effectively hide the element
+				element.guage.Height = 0
+				dl.infoQueue <- "Download Complete:  " + element.download.Title()
+				element.download = nil
+			}
 		}
 	}
 }
 
-func newDownloadsList(parentGrid *ui.Grid) *DownloadsList {
+func newDownloadsList(infoQueue chan string, parentGrid *ui.Grid) *DownloadsList {
 	return &DownloadsList{
-		widget: parentGrid,
+		infoQueue: infoQueue,
+		widget:    parentGrid,
 	}
 }
 

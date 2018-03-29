@@ -33,10 +33,20 @@ func (p *Podcast) GetLatestEpisodes(max int) []*Episode {
 	}
 
 	episodes := make([]*Episode, max)
+	episodeIndex := 0
 
-	for i := 0; i < max; i++ {
-		episodes[i] = newEpisodeFromFeedItem(p.feed.Items[i])
-		episodes[i].Podcast = p
+	for _, item := range p.feed.Items {
+		episode := newEpisodeFromFeedItem(item)
+
+		if episode.IsValid() {
+			episode.Podcast = p
+			episodes[episodeIndex] = episode
+			episodeIndex++
+
+			if episodeIndex >= max {
+				break
+			}
+		}
 	}
 
 	return episodes
